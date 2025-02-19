@@ -57,6 +57,36 @@ class InventoryManager
         productToUpdate.QuantityInStock = newQuantity;
         Console.WriteLine($"Updated {productToUpdate.Name}, quantity: {newQuantity}.");
     }
+
+    public void ListProducts()
+    {
+        if (products.Count == 0)
+        {
+            Console.WriteLine("Inventory is empty.");
+            return;
+        }
+
+        Console.WriteLine("Inventory List:");
+        foreach (var product in products)
+        {
+            Console.WriteLine($"ID: {product.ProductId}, Name: {product.Name}, Quantity: {product.QuantityInStock}, Price: {product.Price:C}");
+        }
+    }
+
+    public double GetTotalValue()
+    {
+        if (products.Count == 0)
+        {
+            Console.WriteLine("Inventory is empty");
+            return 0.0;
+        }
+        double totalValue = 0;
+        foreach (var product in products)
+        {
+            totalValue += product.Price * product.QuantityInStock;
+        }
+        return totalValue;
+    }
 }
 
 class Program
@@ -71,8 +101,11 @@ class Program
             Console.WriteLine("1. Add product");
             Console.WriteLine("2. Remove product");
             Console.WriteLine("3. Update Product");
+            Console.WriteLine("4. Product List");
+            Console.WriteLine("5. Get Total Inventory Value");
+            Console.WriteLine("6. Exit");
             Console.Write("Choose an option: ");
-
+            
             if (!int.TryParse(Console.ReadLine(), out int option))
             {
                 Console.WriteLine("Invalid option");
@@ -123,6 +156,22 @@ class Program
                         continue;
                     }
                     inventory.UpdateProduct(idToUpdate, newQuantity);
+                    break;
+
+                case 4:
+                    inventory.ListProducts();
+                    break;
+
+                case 5:
+                    Console.WriteLine($"Total Inventory Value: {inventory.GetTotalValue():C}");
+                    break;
+
+                case 6:
+                    Console.WriteLine("Exiting...");
+                    return;
+
+                default:
+                    Console.WriteLine("Invalid option. Please choose again.");
                     break;
             }
         }
