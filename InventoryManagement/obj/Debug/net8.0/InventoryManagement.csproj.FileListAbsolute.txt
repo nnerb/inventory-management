@@ -12,3 +12,4 @@ C:\Users\Brenn Santiago\source\repos\InventoryManagement\InventoryManagement\obj
 C:\Users\Brenn Santiago\source\repos\InventoryManagement\InventoryManagement\obj\Debug\net8.0\InventoryManagement.pdb
 C:\Users\Brenn Santiago\source\repos\InventoryManagement\InventoryManagement\obj\Debug\net8.0\InventoryManagement.genruntimeconfig.cache
 C:\Users\Brenn Santiago\source\repos\InventoryManagement\InventoryManagement\obj\Debug\net8.0\ref\InventoryManagement.dll
+C:\Users\Brenn Santiago\source\repos\InventoryManagement\InventoryManagement\obj\Debug\net8.0\InventoryManagement.sourcelink.json
