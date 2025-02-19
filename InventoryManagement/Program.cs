@@ -2,11 +2,21 @@
 {
     public int ProductId { get; private set; }
     public string Name { get; set; }
-    public int QuantityInStock { get; set; }
+    private int quantityInStock;
+    public int QuantityInStock 
+    {
+        get => quantityInStock;
+        private set
+        {
+            if (value < 0) throw new ArgumentException("Invalid quantity");
+            quantityInStock = value;
+        }
+    }
     public double Price { get; set; }
 
     public Product(int productId, string name, int quantity, double price)
     {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Product name cannot be empty.");
         if (quantity < 0) throw new ArgumentException("Invalid quantity");
         if (price < 0) throw new ArgumentException("Invalid price");
 
@@ -15,23 +25,31 @@
         QuantityInStock = quantity;
         Price = price;
     }
+    public void UpdateStock(int newQuantity)
+    {
+        if (newQuantity < 0) throw new ArgumentException("Quantity cannot be negative.");
+        QuantityInStock = newQuantity;
+    }
 }
 class InventoryManager
 {
     private List<Product> products = new List<Product>();
-    private int productId = 1;
+    private int nextProductId = 1;
 
     public Product? FindProduct(int productId)
     {
-        return products.Find(p => p.ProductId == productId);
+        return products.FirstOrDefault(p => p.ProductId == productId);
     }
 
-    public void AddProduct(string name, int quantity, double price)
+    public void AddProduct(Product product)
     {
-        Product product = new Product(productId, name, quantity, price);
         products.Add(product);
         Console.WriteLine($"Added {product.Name} with ID {product.ProductId} to inventory.");
-        productId++;
+    }
+
+    public int FindNextProductId()
+    {
+        return nextProductId++;
     }
 
     public void RemoveProduct(int productId)
@@ -54,7 +72,7 @@ class InventoryManager
             Console.WriteLine("Product not found.");
             return;
         }
-        productToUpdate.QuantityInStock = newQuantity;
+        productToUpdate.UpdateStock(newQuantity);
         Console.WriteLine($"Updated {productToUpdate.Name}, quantity: {newQuantity}.");
     }
 
@@ -95,7 +113,7 @@ class Program
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         InventoryManager inventory = new InventoryManager();
-        
+
         while (true)
         {
             Console.WriteLine("\nInventory Management System in C#");
@@ -106,7 +124,7 @@ class Program
             Console.WriteLine("5. Get Total Inventory Value");
             Console.WriteLine("6. Exit");
             Console.Write("Choose an option: ");
-            
+
             if (!int.TryParse(Console.ReadLine(), out int option))
             {
                 Console.WriteLine("Invalid option");
@@ -116,46 +134,26 @@ class Program
             switch (option)
             {
                 case 1:
-                    Console.Write("Enter Product Name: ");
-                    string name = Console.ReadLine() ?? "Unknown product";
-                    Console.Write("Enter Quantity: ");
-                    if (!int.TryParse(Console.ReadLine(), out int quantity) || quantity < 0)
+                    string name;
+                    do
                     {
-                        Console.WriteLine("Invalid quantity.");
-                        continue;
-                    }
-                    Console.Write("Enter Price: ");
-                    if (!double.TryParse(Console.ReadLine(), out double price) || price < 0)
-                    {
-                        Console.WriteLine("Invalid price.");
-                        continue;
-                    }
-                    inventory.AddProduct(name, quantity, price);
+                        Console.Write("Enter Product Name: ");
+                        name = (Console.ReadLine() ?? "Unknown Product").Trim();
+                    } while (string.IsNullOrWhiteSpace(name));
+                    int quantity = ReadPositiveInt("Enter Quantity: ");
+                    double price = ReadPositiveDouble("Enter Price: "); 
+                    Product newProduct = new Product(inventory.FindNextProductId(), name, quantity, price);
+                    inventory.AddProduct(newProduct);
                     break;
 
                 case 2:
-                    Console.Write("Enter the Product ID: ");
-                    if (!int.TryParse(Console.ReadLine(), out int id))
-                    {
-                        Console.WriteLine("Invalid Product ID. Please enter a number.");
-                        continue; 
-                    }
+                    int id = ReadPositiveInt("Enter the Product ID: ");
                     inventory.RemoveProduct(id);
                     break;
-
+                        
                 case 3:
-                    Console.Write("Enter the Product ID: ");
-                    if (!int.TryParse(Console.ReadLine(), out int idToUpdate))
-                    {
-                        Console.WriteLine("Invalid Product ID. Please enter a number.");
-                        continue;
-                    }
-                    Console.Write("Enter new Quantity: ");
-                    if (!int.TryParse(Console.ReadLine(), out int newQuantity) || newQuantity < 0)
-                    {
-                        Console.WriteLine("Invalid quantity.");
-                        continue;
-                    }
+                    int idToUpdate = ReadPositiveInt("Enter the Product ID: ");
+                    int newQuantity = ReadPositiveInt("Enter the new quantity: ");
                     inventory.UpdateProduct(idToUpdate, newQuantity);
                     break;
 
@@ -174,6 +172,28 @@ class Program
                 default:
                     Console.WriteLine("Invalid option. Please choose again.");
                     break;
+            }
+        }
+        int ReadPositiveInt(string prompt)
+        {
+            while (true)
+            {
+                Console.Write(prompt);
+                if (int.TryParse(Console.ReadLine(), out int value) && value >= 0)
+                    return value;
+
+                Console.WriteLine($"Invalid input. Please try again.");
+            }
+        }
+        double ReadPositiveDouble (string prompt)
+        {
+            while (true)
+            {
+                Console.Write(prompt);
+                if (double.TryParse(Console.ReadLine(), out double value) && value >= 0)
+                    return value == -0.0 ? 0.0 : value;
+
+                Console.WriteLine($"Invalid input. Please try again.");
             }
         }
     }
