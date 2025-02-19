@@ -30,7 +30,7 @@ class InventoryManager
     {
         Product product = new Product(productId, name, quantity, price);
         products.Add(product);
-        Console.WriteLine($"{product.Name} with ID {product.ProductId} added to inventory.");
+        Console.WriteLine($"Added {product.Name} with ID {product.ProductId} to inventory.");
         productId++;
     }
 
