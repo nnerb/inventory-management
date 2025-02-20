@@ -2,16 +2,7 @@
 {
     public int ProductId { get; private set; }
     public string Name { get; set; }
-    private int quantityInStock;
-    public int QuantityInStock 
-    {
-        get => quantityInStock;
-        private set
-        {
-            if (value < 0) throw new ArgumentException("Invalid quantity");
-            quantityInStock = value;
-        }
-    }
+    public int QuantityInStock { get; private set; }
     public double Price { get; set; }
 
     public Product(int productId, string name, int quantity, double price)
@@ -69,7 +60,7 @@ class InventoryManager
         Product? productToUpdate = FindProduct(productId);
         if (productToUpdate == null)
         {
-            Console.WriteLine("Product not found.");
+            Console.WriteLine($"Product with {productId} not found.");
             return;
         }
         productToUpdate.UpdateStock(newQuantity);
@@ -98,12 +89,7 @@ class InventoryManager
             Console.WriteLine("Inventory is empty");
             return 0.0;
         }
-        double totalValue = 0;
-        foreach (var product in products)
-        {
-            totalValue += product.Price * product.QuantityInStock;
-        }
-        return totalValue;
+       return products.Sum(product => product.Price * product.QuantityInStock); 
     }
 }
 
@@ -135,11 +121,14 @@ class Program
             {
                 case 1:
                     string name;
-                    do
+                    while (true)
                     {
                         Console.Write("Enter Product Name: ");
                         name = (Console.ReadLine() ?? "Unknown Product").Trim();
-                    } while (string.IsNullOrWhiteSpace(name));
+                        if (!string.IsNullOrWhiteSpace(name))
+                            break;
+                        Console.WriteLine("Product name cannot be empty.");
+                    }
                     int quantity = ReadPositiveInt("Enter Quantity: ");
                     double price = ReadPositiveDouble("Enter Price: "); 
                     Product newProduct = new Product(inventory.FindNextProductId(), name, quantity, price);
@@ -174,7 +163,7 @@ class Program
                     break;
             }
         }
-        int ReadPositiveInt(string prompt)
+        int ReadPositiveInt (string prompt)
         {
             while (true)
             {
