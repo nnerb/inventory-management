@@ -35,7 +35,7 @@ class InventoryManager
     public void AddProduct(Product product)
     {
         products.Add(product);
-        Console.WriteLine($"Added {product.Name} with ID {product.ProductId} to inventory.");
+        Console.WriteLine($"✅ Product '{product.Name}' added successfully with ID: {product.ProductId}.");
     }
 
     public int FindNextProductId()
@@ -48,11 +48,11 @@ class InventoryManager
         Product? product = FindProduct(productId);
         if (product == null)
         {
-            Console.WriteLine("Product not found.");
+            Console.WriteLine($"❌ Product with {productId} not found.");
             return;
         }
         products.Remove(product);
-        Console.WriteLine($"{product.Name} removed.");
+        Console.WriteLine($"✅ {product.Name} removed.");
     }
 
     public void UpdateProduct(int productId, int newQuantity)
@@ -60,33 +60,42 @@ class InventoryManager
         Product? productToUpdate = FindProduct(productId);
         if (productToUpdate == null)
         {
-            Console.WriteLine($"Product with {productId} not found.");
+            Console.WriteLine($"❌ Product with {productId} not found.");
             return;
         }
         productToUpdate.UpdateStock(newQuantity);
-        Console.WriteLine($"Updated {productToUpdate.Name}, quantity: {newQuantity}.");
+        Console.WriteLine($"✅ Updated {productToUpdate.Name}, quantity: {newQuantity}.");
     }
 
     public void ListProducts()
     {
         if (products.Count == 0)
         {
-            Console.WriteLine("Inventory is empty.");
+            Console.WriteLine("❌ Inventory is empty.");
             return;
         }
 
-        Console.WriteLine("Inventory List:");
+        Console.WriteLine("\n📦 Inventory List:");
+        Console.WriteLine(new string('-', 65)); // Separator line
+
+        // Header
+        Console.WriteLine($"{"ID",-5} {"Name",-20} {"Quantity",-10} {"Price",10}");
+        Console.WriteLine(new string('-', 65)); // Separator line
+
+        // Product rows
         foreach (var product in products)
         {
-            Console.WriteLine($"ID: {product.ProductId}, Name: {product.Name}, Quantity: {product.QuantityInStock}, Price: {product.Price:C}");
+            Console.WriteLine($"{product.ProductId,-5} {product.Name,-20} {product.QuantityInStock,-10} {product.Price,10:C}");
         }
+
+        Console.WriteLine(new string('-', 65)); // Closing separator
     }
 
     public double GetTotalValue()
     {
         if (products.Count == 0)
         {
-            Console.WriteLine("Inventory is empty");
+            Console.WriteLine("❌ Inventory is empty");
             return 0.0;
         }
        return products.Sum(product => product.Price * product.QuantityInStock); 
@@ -102,9 +111,11 @@ class Program
 
         while (true)
         {
-            Console.WriteLine("\nInventory Management System in C#");
-            Console.WriteLine("1. Add product");
-            Console.WriteLine("2. Remove product");
+            Console.WriteLine(new string('=', 31));
+            Console.WriteLine("🏪 Inventory Management System");
+            Console.WriteLine(new string('=', 31));
+            Console.WriteLine("1. Add Product");
+            Console.WriteLine("2. Remove Product");
             Console.WriteLine("3. Update Product");
             Console.WriteLine("4. Product List");
             Console.WriteLine("5. Get Total Inventory Value");
@@ -113,36 +124,39 @@ class Program
 
             if (!int.TryParse(Console.ReadLine(), out int option))
             {
-                Console.WriteLine("Invalid option");
+                Console.WriteLine("❌ Invalid option");
                 continue;
             }
 
             switch (option)
             {
                 case 1:
-                    string name;
-                    while (true)
-                    {
-                        Console.Write("Enter Product Name: ");
-                        name = (Console.ReadLine() ?? "Unknown Product").Trim();
-                        if (!string.IsNullOrWhiteSpace(name))
-                            break;
-                        Console.WriteLine("Product name cannot be empty.");
-                    }
+                    ShowCancelPrompt(26);
+                    string? name = ReadProductName("Enter Product Name: ");
+                    if (name == null) break;
                     int quantity = ReadPositiveInt("Enter Quantity: ");
-                    double price = ReadPositiveDouble("Enter Price: "); 
+                    if (quantity == -1) break;
+                    double price = ReadPositiveDouble("Enter Price: ");
+                    if (price == -1) break;
                     Product newProduct = new Product(inventory.FindNextProductId(), name, quantity, price);
                     inventory.AddProduct(newProduct);
                     break;
 
                 case 2:
+                    ShowCancelPrompt(26);
                     int id = ReadPositiveInt("Enter the Product ID: ");
+                    if (id == -1) break;
                     inventory.RemoveProduct(id);
                     break;
                         
                 case 3:
+                    ShowCancelPrompt(26);
+                    Console.WriteLine("Type 'cancel' to abort 🚫");
+                    Console.WriteLine(new string('=', 26));
                     int idToUpdate = ReadPositiveInt("Enter the Product ID: ");
+                    if (idToUpdate == -1) break;
                     int newQuantity = ReadPositiveInt("Enter the new quantity: ");
+                    if (newQuantity == -1) break;
                     inventory.UpdateProduct(idToUpdate, newQuantity);
                     break;
 
@@ -151,7 +165,7 @@ class Program
                     break;
 
                 case 5:
-                    Console.WriteLine($"Total Inventory Value: {inventory.GetTotalValue():C}");
+                    Console.WriteLine($"✅ Total Inventory Value: {inventory.GetTotalValue():C}");
                     break;
 
                 case 6:
@@ -159,31 +173,62 @@ class Program
                     return;
 
                 default:
-                    Console.WriteLine("Invalid option. Please choose again.");
+                    Console.WriteLine("❌ Invalid option. Please choose again.");
                     break;
             }
         }
-        int ReadPositiveInt (string prompt)
+
+        string? ReadProductName(string prompt)
         {
             while (true)
             {
-                Console.Write(prompt);
-                if (int.TryParse(Console.ReadLine(), out int value) && value >= 0)
-                    return value;
-
-                Console.WriteLine($"Invalid input. Please try again.");
+                string? input = ReadInputOrCancel(prompt);
+                if (input == null) return null;
+                if (!string.IsNullOrWhiteSpace(input))
+                    return input;
+                Console.WriteLine("❌ Product name cannot be empty.");
             }
         }
-        double ReadPositiveDouble (string prompt)
+        int ReadPositiveInt(string prompt)
         {
             while (true)
             {
-                Console.Write(prompt);
-                if (double.TryParse(Console.ReadLine(), out double value) && value >= 0)
-                    return value == -0.0 ? 0.0 : value;
-
-                Console.WriteLine($"Invalid input. Please try again.");
+                string? input = ReadInputOrCancel(prompt);
+                if (input == null) return -1;
+                if (int.TryParse(input, out int value) && value >= 0)
+                    return value;
+                Console.WriteLine("❌ Invalid input. Please try again.");
             }
+        }
+        double ReadPositiveDouble(string prompt)
+        {
+            while (true)
+            {
+                string? input = ReadInputOrCancel(prompt); 
+                if (input == null) return -1;
+                if (double.TryParse(input, out double value) && value >= 0)
+                    return value == -0.0 ? 0.0 : value;
+                Console.WriteLine("❌ Invalid input. Please try again.");
+            }
+        }
+        string? ReadInputOrCancel(string prompt)
+        {
+            Console.Write(prompt);
+            string? input = Console.ReadLine()?.Trim();
+
+            if (input?.ToLower() == "cancel")
+            {
+                Console.WriteLine("🚫 Operation canceled. Returning to main menu.");
+                return null;
+            }
+            return input;
+        }
+        void ShowCancelPrompt(int width)
+        {
+            string separator = new string('=', width);
+            Console.WriteLine(separator);
+            Console.WriteLine("Type 'cancel' to abort 🚫");
+            Console.WriteLine(separator);
         }
     }
 }
