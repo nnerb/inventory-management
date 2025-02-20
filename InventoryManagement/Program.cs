@@ -1,10 +1,12 @@
-﻿class Product
+﻿// Represents a product in the inventory
+class Product
 {
-    public int ProductId { get; private set; }
-    public string Name { get; set; }
-    public int QuantityInStock { get; private set; }
-    public double Price { get; set; }
+    public int ProductId { get; private set; } // Unique product identifier
+    public string Name { get; set; } // Product name
+    public int QuantityInStock { get; private set; } // Current stock quantity
+    public double Price { get; set; } // Price per unit
 
+    // Constructor to initialize a new product
     public Product(int productId, string name, int quantity, double price)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Product name cannot be empty.");
@@ -16,33 +18,39 @@
         QuantityInStock = quantity;
         Price = price;
     }
+    // Updates the stock quantity
     public void UpdateStock(int newQuantity)
     {
         if (newQuantity < 0) throw new ArgumentException("Quantity cannot be negative.");
         QuantityInStock = newQuantity;
     }
 }
+// Manages inventory operations
 class InventoryManager
 {
-    private List<Product> products = new List<Product>();
-    private int nextProductId = 1;
+    private List<Product> products = new List<Product>(); // List to store products
+    private int nextProductId = 1; // Auto-increment product ID
 
+    // Finds a product by ID
     public Product? FindProduct(int productId)
     {
         return products.FirstOrDefault(p => p.ProductId == productId);
     }
 
+    // Adds a new product to the inventory
     public void AddProduct(Product product)
     {
         products.Add(product);
         Console.WriteLine($"✅ Product '{product.Name}' added successfully with ID: {product.ProductId}.");
     }
-
+    
+    // Generates the next product ID
     public int FindNextProductId()
     {
         return nextProductId++;
     }
 
+    // Removes a product from the inventory
     public void RemoveProduct(int productId)
     {
         Product? product = FindProduct(productId);
@@ -55,6 +63,7 @@ class InventoryManager
         Console.WriteLine($"✅ {product.Name} removed.");
     }
 
+    // Updates the stock of a product
     public void UpdateProduct(int productId, int newQuantity)
     {
         Product? productToUpdate = FindProduct(productId);
@@ -67,6 +76,7 @@ class InventoryManager
         Console.WriteLine($"✅ Updated {productToUpdate.Name}, quantity: {newQuantity}.");
     }
 
+    // Lists all products in the inventory
     public void ListProducts()
     {
         if (products.Count == 0)
@@ -86,7 +96,7 @@ class InventoryManager
         Console.WriteLine("\n📦 Inventory List:");
         Console.WriteLine(new string('-', totalWidth));
 
-        // Header
+        // Header of the table
         Console.WriteLine(
             $"{"ID".PadRight(idWidth)}" +
             $"{"Name".PadRight(nameWidth)}" +
@@ -109,6 +119,7 @@ class InventoryManager
         Console.WriteLine(new string('-', totalWidth));
     }
 
+    // Calculates the total value of the inventory
     public double GetTotalValue()
     {
         if (products.Count == 0)
@@ -120,15 +131,18 @@ class InventoryManager
     }
 }
 
+// Main program entry point
 class Program
 { 
     static void Main()
     {
+        // Set console encoding to UTF-8 for Unicode support such as Philippine peso
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         InventoryManager inventory = new InventoryManager();
 
         while (true)
         {
+            // Display Menu
             Console.WriteLine(new string('=', 31));
             Console.WriteLine("🏪 Inventory Management System");
             Console.WriteLine(new string('=', 31));
@@ -140,6 +154,7 @@ class Program
             Console.WriteLine("6. Exit");
             Console.Write("Choose an option: ");
 
+            // Validate user input
             if (!int.TryParse(Console.ReadLine(), out int option))
             {
                 Console.WriteLine("❌ Invalid option");
@@ -150,11 +165,11 @@ class Program
             {
                 case 1:
                     ShowCancelPrompt(26);
-                    string? name = ReadProductName("Enter Product Name: ");
+                    string? name = PromptForProductName("Enter Product Name: ");
                     if (name == null) break;
-                    int quantity = ReadPositiveInt("Enter Quantity: ");
+                    int quantity = PromptForInteger("Enter Quantity: ");
                     if (quantity == -1) break;
-                    double price = ReadPositiveDouble("Enter Price: ");
+                    double price = PromptForDouble("Enter Price: ");
                     if (price == -1) break;
                     Product newProduct = new Product(inventory.FindNextProductId(), name, quantity, price);
                     inventory.AddProduct(newProduct);
@@ -162,16 +177,16 @@ class Program
 
                 case 2:
                     ShowCancelPrompt(26);
-                    int id = ReadPositiveInt("Enter the Product ID: ");
+                    int id = PromptForInteger("Enter the Product ID: ");
                     if (id == -1) break;
                     inventory.RemoveProduct(id);
                     break;
                         
                 case 3:
                     ShowCancelPrompt(26);
-                    int idToUpdate = ReadPositiveInt("Enter the Product ID: ");
+                    int idToUpdate = PromptForInteger("Enter the Product ID: ");
                     if (idToUpdate == -1) break;
-                    int newQuantity = ReadPositiveInt("Enter the new quantity: ");
+                    int newQuantity = PromptForInteger("Enter the new quantity: ");
                     if (newQuantity == -1) break;
                     inventory.UpdateProduct(idToUpdate, newQuantity);
                     break;
@@ -194,40 +209,43 @@ class Program
             }
         }
 
-        string? ReadProductName(string prompt)
+        // Utilility methods for user input handling and validation
+        string? PromptForProductName(string prompt)
         {
             while (true)
             {
-                string? input = ReadInputOrCancel(prompt);
+                string? input = GetInputOrCancel(prompt);
                 if (input == null) return null;
                 if (!string.IsNullOrWhiteSpace(input))
                     return input;
                 Console.WriteLine("❌ Product name cannot be empty.");
             }
         }
-        int ReadPositiveInt(string prompt)
+        int PromptForInteger(string prompt) 
         {
             while (true)
             {
-                string? input = ReadInputOrCancel(prompt);
+                string? input = GetInputOrCancel(prompt);
                 if (input == null) return -1;
                 if (int.TryParse(input, out int value) && value >= 0)
                     return value;
                 Console.WriteLine("❌ Invalid input. Please try again.");
             }
         }
-        double ReadPositiveDouble(string prompt)
+        double PromptForDouble(string prompt)
         {
             while (true)
             {
-                string? input = ReadInputOrCancel(prompt); 
+                string? input = GetInputOrCancel(prompt); 
                 if (input == null) return -1;
                 if (double.TryParse(input, out double value) && value >= 0)
                     return value == -0.0 ? 0.0 : value;
                 Console.WriteLine("❌ Invalid input. Please try again.");
             }
         }
-        string? ReadInputOrCancel(string prompt)
+
+        // Utility method to get input or cancel operation
+        string? GetInputOrCancel(string prompt)
         {
             Console.Write(prompt);
             string? input = Console.ReadLine()?.Trim();
@@ -239,6 +257,8 @@ class Program
             }
             return input;
         }
+
+        // Utility method to show cancel prompt
         void ShowCancelPrompt(int width)
         {
             string separator = new string('=', width);
