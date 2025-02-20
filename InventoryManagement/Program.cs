@@ -75,20 +75,38 @@ class InventoryManager
             return;
         }
 
+        // Calculate dynamic column widths
+        int idWidth = Math.Max("ID".Length, products.Max(p => p.ProductId.ToString().Length)) + 2;
+        int nameWidth = Math.Max("Name".Length, products.Max(p => p.Name.Length)) + 2;
+        int quantityWidth = Math.Max("Quantity".Length, products.Max(p => p.QuantityInStock.ToString().Length)) + 2;
+        int priceWidth = Math.Max("Price".Length, products.Max(p => p.Price.ToString("C").Length)) + 2;
+
+        int totalWidth = idWidth + nameWidth + quantityWidth + priceWidth + 5; // Add spacing and separators
+
         Console.WriteLine("\n📦 Inventory List:");
-        Console.WriteLine(new string('-', 65)); // Separator line
+        Console.WriteLine(new string('-', totalWidth));
 
         // Header
-        Console.WriteLine($"{"ID",-5} {"Name",-20} {"Quantity",-10} {"Price",10}");
-        Console.WriteLine(new string('-', 65)); // Separator line
+        Console.WriteLine(
+            $"{"ID".PadRight(idWidth)}" +
+            $"{"Name".PadRight(nameWidth)}" +
+            $"{"Quantity".PadRight(quantityWidth)}" +
+            $"{"Price".PadLeft(priceWidth)}"
+        );
+        Console.WriteLine(new string('-', totalWidth));
 
         // Product rows
         foreach (var product in products)
         {
-            Console.WriteLine($"{product.ProductId,-5} {product.Name,-20} {product.QuantityInStock,-10} {product.Price,10:C}");
+            Console.WriteLine(
+                $"{product.ProductId.ToString().PadRight(idWidth)}" +
+                $"{product.Name.PadRight(nameWidth)}" +
+                $"{product.QuantityInStock.ToString().PadRight(quantityWidth)}" +
+                $"{product.Price.ToString("C").PadLeft(priceWidth)}"
+            );
         }
 
-        Console.WriteLine(new string('-', 65)); // Closing separator
+        Console.WriteLine(new string('-', totalWidth));
     }
 
     public double GetTotalValue()
@@ -151,8 +169,6 @@ class Program
                         
                 case 3:
                     ShowCancelPrompt(26);
-                    Console.WriteLine("Type 'cancel' to abort 🚫");
-                    Console.WriteLine(new string('=', 26));
                     int idToUpdate = ReadPositiveInt("Enter the Product ID: ");
                     if (idToUpdate == -1) break;
                     int newQuantity = ReadPositiveInt("Enter the new quantity: ");
