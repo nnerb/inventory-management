@@ -1,1 +1,35 @@
 .vs/
+# Ignore build and output directories
+bin/
+obj/
+
+# Ignore Visual Studio specific files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore compiled binaries and debug files
+*.exe
+*.dll
+*.pdb
+*.log
+*.cache
+*.db
+
+# Ignore dependency-related files
+*.nuget/
+*.nupkg
+packages/
+node_modules/
+
+# Ignore temporary and system files
+*.tmp
+*.temp
+*.bak
+*.swp
+.DS_Store
+Thumbs.db
+
