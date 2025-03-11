@@ -22,7 +22,7 @@ The **Inventory Management System** is a console-based application that allows u
 
 1. **Clone the repository**:
    ```sh
-   git clone https://github.com/your-repo/inventory-management.git
+   git clone https://github.com/nnerb/inventory-management.git
    cd inventory-management
    ```
 2. **Build and Run**:
